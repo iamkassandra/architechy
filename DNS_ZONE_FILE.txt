@@ -1,0 +1,26 @@
+$ORIGIN therealityarchitech.com.
+$TTL 3600
+@	IN	SOA	ns1.vercel-dns.com. hostmaster.vercel-dns.com. (
+			2026042901 ; serial
+			7200       ; refresh
+			3600       ; retry
+			1209600    ; expire
+			3600       ; minimum
+)
+
+; Nameservers (Pointed to Vercel as requested for the upload)
+@	IN	NS	ns1.vercel-dns.com.
+@	IN	NS	ns2.vercel-dns.com.
+
+; A Records for Firebase Hosting (Apex Domain)
+; Note: These are standard Firebase Hosting Global IPs. 
+; Verify these in Firebase Console -> Hosting -> Add Custom Domain
+@	IN	A	199.36.158.100
+@	IN	A	151.101.1.195
+
+; CNAME Records for Subdomains
+www	IN	CNAME	therealityarchitech.web.app.
+
+; Optional: TXT record for Firebase Domain Verification
+; You will get this code from the Firebase Console after adding the domain.
+; @	IN	TXT	"google-site-verification=XXXXXXXXXXXXXXXXXXXX"
