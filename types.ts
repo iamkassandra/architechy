@@ -45,13 +45,15 @@ export interface UserProfile {
   purchasedAssetIds: string[];
 }
 
-export enum AppRoute {
-  HOME = '/',
-  BLOG = '/blog',
-  SHOP = '/shop',
-  CHECKOUT = '/checkout',
-  HUB = '/hub', 
-  SUCCESS = '/success',
-  ACCOUNT = '/account',
-  ADMIN = '/admin'
-}
+export const AppRoute = {
+  HOME: '/',
+  BLOG: '/blog',
+  SHOP: '/shop',
+  CHECKOUT: '/checkout',
+  HUB: '/hub', 
+  SUCCESS: '/success',
+  ACCOUNT: '/account',
+  ADMIN: '/admin'
+} as const;
+
+export type AppRoute = typeof AppRoute[keyof typeof AppRoute];
