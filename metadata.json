@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Remix: THE ARCHITECH | Intelligence Orchestration",
+  "description": "Premium AI engineering journal and digital asset vault. Built for the architechs of the intelligence economy.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

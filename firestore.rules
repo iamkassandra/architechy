@@ -1,0 +1,157 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { 
+      return request.auth != null && 
+             request.auth.token.email_verified == true; 
+    }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isAdmin() { 
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'theaucklandassistant@gmail.com'
+      ); 
+    }
+    function isValidId(id) { return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // --- Entity Validations ---
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['userId', 'email', 'createdAt', 'updatedAt']) &&
+             data.keys().size() == 4 &&
+             data.userId == request.auth.uid &&
+             data.email is string &&
+             data.email.size() <= 200 &&
+             data.createdAt == request.time &&
+             data.updatedAt == request.time;
+    }
+
+    function isValidPurchase(data) {
+      return data.keys().hasAll(['userId', 'productId', 'timestamp', 'status', 'amount']) &&
+             data.keys().size() == 5 &&
+             data.userId == request.auth.uid &&
+             data.productId is string &&
+             data.timestamp == request.time &&
+             data.status in ['pending', 'completed', 'failed'];
+    }
+
+    function isValidReadingListItem(data) {
+      return data.keys().hasAll(['userId', 'resourceId', 'resourceType', 'savedAt']) &&
+             data.keys().size() == 4 &&
+             data.userId == request.auth.uid &&
+             data.resourceId is string &&
+             data.savedAt == request.time;
+    }
+
+    function isValidNewsletter(data) {
+      return data.keys().hasAll(['email', 'subscribedAt', 'source']) &&
+             data.keys().size() == 3 &&
+             data.email is string && data.email.size() <= 200 &&
+             data.subscribedAt == request.time;
+    }
+
+    function isValidReport(data) {
+      return data.keys().hasAll(['title', 'content', 'summary', 'status', 'generatedAt']) &&
+             data.keys().size() >= 5 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.status in ['draft', 'approved', 'published'] &&
+             (data.generatedAt == request.time || data.generatedAt is timestamp);
+    }
+
+    function isValidCommand(data) {
+      return data.keys().hasAll(['command', 'timestamp', 'status']) &&
+             data.keys().size() >= 3 &&
+             data.command is string && data.command.size() <= 1000 &&
+             data.status in ['executing', 'completed', 'failed'] &&
+             data.timestamp == request.time;
+    }
+
+    function isValidBlogPost(data) {
+      return data.keys().hasAll(['title', 'content', 'category', 'level', 'author', 'date', 'createdAt']) &&
+             data.keys().size() == 7 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.content is string &&
+             data.createdAt == request.time;
+    }
+
+    // --- Path Matching ---
+
+    match /test/connection {
+      allow read: if true;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && 
+                      incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'updatedAt']) &&
+                      incoming().updatedAt == request.time;
+    }
+
+    match /products/{productId} {
+      allow get: if isValidId(productId);
+      allow list: if true; 
+      allow write: if isAdmin();
+    }
+
+    match /purchases/{purchaseId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isValidPurchase(incoming()) && isValidId(purchaseId);
+      // Purchases are immutable once completed
+      allow update: if false; 
+    }
+
+    match /reading_lists/{itemId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidReadingListItem(incoming()) && isValidId(itemId);
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    match /newsletter/{email} {
+      allow create: if isValidNewsletter(incoming());
+      allow read: if isAdmin();
+    }
+
+    match /agent_reports/{reportId} {
+      allow read: if isAdmin() || (resource.data.status == 'published');
+      allow create: if isAdmin() && isValidReport(incoming());
+      allow update: if isAdmin() && isValidReport(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /admin_commands/{commandId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && isValidCommand(incoming());
+      allow update: if isAdmin();
+    }
+
+    match /fulfillment_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Managed via Server Node
+    }
+
+    // Admin List (System Only)
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /blog/{postId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidBlogPost(incoming());
+      allow update: if isAdmin() && isValidBlogPost(incoming());
+      allow delete: if isAdmin();
+    }
+  }
+}

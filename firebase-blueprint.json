@@ -1,0 +1,176 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Enterprise user profile with system metadata",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      },
+      "required": ["userId", "email"]
+    },
+    "Product": {
+      "title": "Vault Asset",
+      "description": "High-value digital product available in the Vault",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "image": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "name", "price"]
+    },
+    "Purchase": {
+      "title": "Acquisition Record",
+      "description": "Record of a successfully acquired asset",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "productId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["completed", "pending", "failed"] },
+        "amount": { "type": "number" }
+      },
+      "required": ["userId", "productId"]
+    },
+    "ReadingListItem": {
+      "title": "Saved Resource",
+      "description": "A bookmarked article or asset for later consumption",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "resourceId": { "type": "string" },
+        "resourceType": { "type": "string", "enum": ["article", "product"] },
+        "savedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "resourceId"]
+    },
+    "NewsletterSubscriber": {
+      "title": "Newsletter Lead",
+      "description": "Email subscriber to the Architech Intel stream",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "subscribedAt": { "type": "string", "format": "date-time" },
+        "source": { "type": "string" }
+      },
+      "required": ["email"]
+    },
+    "AgentReport": {
+      "title": "Platform Discourse",
+      "description": "AI-generated branded intelligence reports",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "summary": { "type": "string" },
+        "status": { "type": "string", "enum": ["draft", "approved", "published"] },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "sourceUrl": { "type": "string" },
+        "strategicReport": { "type": "string" },
+        "blogVersion": { "type": "string" },
+        "socialAssets": { "type": "string" }
+      },
+      "required": ["title", "content"]
+    },
+    "AdminCommand": {
+      "title": "Strategic Command",
+      "description": "Natural language command to the platform agent",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "command": { "type": "string" },
+        "response": { "type": "string" },
+        "status": { "type": "string", "enum": ["executing", "completed", "failed"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["command", "timestamp"]
+    },
+    "BlogPost": {
+      "title": "Strategic Intel",
+      "description": "Published intelligence report for public consumption",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "level": { "type": "string" },
+        "author": { "type": "string" },
+        "date": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string" }
+        }
+      },
+      "description": "Administrative authority node"
+    },
+    "/blog/{postId}": {
+      "schema": "BlogPost",
+      "description": "Public intelligence feed"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Core user metadata"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Vault asset catalog"
+    },
+    "/purchases/{purchaseId}": {
+      "schema": "Purchase",
+      "description": "Transactional records"
+    },
+    "/reading_lists/{itemId}": {
+      "schema": "ReadingListItem",
+      "description": "Saved assets and articles"
+    },
+    "/newsletter/{email}": {
+      "schema": "NewsletterSubscriber",
+      "description": "Architech network directory"
+    },
+    "/agent_reports/{reportId}": {
+      "schema": "AgentReport",
+      "description": "Platform management agent outputs"
+    },
+    "/admin_commands/{commandId}": {
+      "schema": "AdminCommand",
+      "description": "Operational command history"
+    },
+    "/fulfillment_logs/{logId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string" },
+          "email": { "type": "string" },
+          "productId": { "type": "string" },
+          "type": { "type": "string" },
+          "message": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        },
+        "required": ["userId", "email", "productId", "type", "message", "timestamp"]
+      },
+      "description": "Historical log of asset distributions and user communications."
+    }
+  }
+}

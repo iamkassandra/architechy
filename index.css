@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@300;400;500;700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-mono: "Noto Sans Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  --color-black: #000000;
+  --color-red: #660000;
+  --color-white: #FFFFFF;
+
+  --animate-marquee: marquee 30s linear infinite;
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-black);
+    color: var(--color-white);
+    font-family: var(--font-mono);
+    @apply antialiased selection:bg-red selection:text-white;
+  }
+}
+
+@layer components {
+  .brutal-border {
+    @apply border border-white/10 hover:border-red/50 transition-colors duration-500;
+  }
+  
+  .brutal-grid {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  }
+
+  .neo-blur {
+    backdrop-filter: blur(20px);
+    background: rgba(5, 5, 5, 0.82);
+  }
+
+  .marquee {
+    @apply flex overflow-hidden whitespace-nowrap py-4 border-y border-white/5;
+  }
+
+  .marquee-content {
+    @apply flex animate-marquee;
+  }
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-black); }
+::-webkit-scrollbar-thumb { background: var(--color-red); }
